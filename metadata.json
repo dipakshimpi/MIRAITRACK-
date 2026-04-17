@@ -1,0 +1,6 @@
+{
+  "name": "Mirai Track",
+  "description": "A transparent member productivity and attendance system where everyone can see everyone's data to foster accountability and transparency.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["Firebase Auth", "Firestore", "Real-time Dashboard", "Productivity Analytics", "Leaderboard"]
+}
