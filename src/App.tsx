@@ -6,6 +6,9 @@ import Leaderboard from './Leaderboard';
 import Analytics from './Analytics';
 import AttendanceSystem from './AttendanceSystem';
 import NotificationSystem from './NotificationSystem';
+import PendingApproval from './PendingApproval';
+import ApprovalsManager from './ApprovalsManager';
+import MonthlyReport from './MonthlyReport';
 import { UserProfile } from './types';
 import keycloak from './lib/keycloak';
 import { Button } from './components/ui/button';
@@ -23,7 +26,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type Tab = 'dashboard' | 'submit' | 'leaderboard' | 'analytics';
+type Tab = 'dashboard' | 'submit' | 'leaderboard' | 'analytics' | 'approvals' | 'monthly';
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -40,11 +43,19 @@ export default function App() {
     return <Auth onUserChange={setUser} />;
   }
 
+  if (user.status === 'pending' && !user.is_super_profile) {
+    return <PendingApproval />;
+  }
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'submit', label: 'Submit Report', icon: <PlusCircle className="w-5 h-5" /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
+    ...(user.is_super_profile ? [
+      { id: 'approvals', label: 'Approvals', icon: <ShieldCheck className="w-5 h-5" /> },
+      { id: 'monthly', label: 'Monthly Report', icon: <BarChart3 className="w-5 h-5" /> }
+    ] : [])
   ];
 
   return (
@@ -163,6 +174,8 @@ export default function App() {
             {activeTab === 'submit' && <SubmissionForm user={user} />}
             {activeTab === 'leaderboard' && <Leaderboard />}
             {activeTab === 'analytics' && <Analytics />}
+            {user.is_super_profile && activeTab === 'approvals' && <ApprovalsManager />}
+            {user.is_super_profile && activeTab === 'monthly' && <MonthlyReport />}
           </motion.div>
         </AnimatePresence>
       </main>

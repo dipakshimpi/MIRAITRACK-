@@ -6,6 +6,8 @@ export interface UserProfile {
   totalPresent: number;
   totalAbsent: number;
   productivityScore: number;
+  status: 'pending' | 'approved';
+  is_super_profile: boolean;
 }
 
 

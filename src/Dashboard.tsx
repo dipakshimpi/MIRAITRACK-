@@ -12,13 +12,18 @@ import { format } from 'date-fns';
 export default function Dashboard() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [recentReports, setRecentReports] = useState<DailyReport[]>([]);
+  const [avgProductivity, setAvgProductivity] = useState(0);
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   useEffect(() => {
     // Initial fetch
     const fetchData = async () => {
       const { data: userData } = await supabase.from('users').select('*');
-      if (userData) setUsers(userData as UserProfile[]);
+      if (userData) {
+        setUsers(userData as UserProfile[]);
+        const totalScore = (userData as UserProfile[]).reduce((acc, u) => acc + (u.productivityScore || 0), 0);
+        setAvgProductivity(userData.length > 0 ? Math.round(totalScore / userData.length) : 0);
+      }
 
       const { data: reportData } = await supabase
         .from('reports')
@@ -65,8 +70,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard title="Total Members" value={users.length} icon={<Users className="w-5 h-5" />} color="bg-blue-500" />
         <StatCard title="Submitted Today" value={recentReports.filter(r => r.date === todayStr).length} icon={<CheckCircle2 className="w-5 h-5" />} color="bg-green-500" />
-        <StatCard title="Pending" value={users.length - recentReports.filter(r => r.date === todayStr).length} icon={<Clock className="w-5 h-5" />} color="bg-amber-500" />
-        <StatCard title="Avg Productivity" value="84%" icon={<TrendingUp className="w-5 h-5" />} color="bg-indigo-500" />
+        <StatCard title="Pending" value={Math.max(0, users.length - recentReports.filter(r => r.date === todayStr).length)} icon={<Clock className="w-5 h-5" />} color="bg-amber-500" />
+        <StatCard title="Avg Productivity" value={`${avgProductivity}%`} icon={<TrendingUp className="w-5 h-5" />} color="bg-indigo-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

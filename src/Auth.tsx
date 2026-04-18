@@ -24,12 +24,19 @@ export default function Auth({ onUserChange }: AuthProps) {
         if (authenticated && keycloak.tokenParsed) {
           const { sub, name, email } = keycloak.tokenParsed as any;
           
+          // Store token for calendar sync
+          if (keycloak.token) {
+            localStorage.setItem('google_calendar_token', keycloak.token);
+          }
           // Check if user exists in Supabase
           const { data: userDoc, error } = await supabase
             .from('users')
             .select('*')
             .eq('uid', sub)
             .single();
+
+          const superEmail = import.meta.env.VITE_SUPER_PROFILE_EMAIL;
+          const isSuper = email === superEmail;
 
           if (error && error.code === 'PGRST116') {
             // User doesn't exist, create profile
@@ -40,7 +47,9 @@ export default function Auth({ onUserChange }: AuthProps) {
               createdAt: new Date().toISOString(),
               totalPresent: 0,
               totalAbsent: 0,
-              productivityScore: 0
+              productivityScore: 0,
+              status: isSuper ? 'approved' : 'pending',
+              is_super_profile: isSuper
             };
             
             const { error: insertError } = await supabase
@@ -51,6 +60,12 @@ export default function Auth({ onUserChange }: AuthProps) {
               onUserChange(newProfile);
             }
           } else if (userDoc) {
+            // Always ensure Super Profile flag is correct if email matches
+            if (isSuper && !userDoc.is_super_profile) {
+               await supabase.from('users').update({ is_super_profile: true, status: 'approved' }).eq('uid', sub);
+               userDoc.is_super_profile = true;
+               userDoc.status = 'approved';
+            }
             onUserChange(userDoc as UserProfile);
           }
         } else {
