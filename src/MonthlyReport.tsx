@@ -4,6 +4,7 @@ import { UserProfile, DailyReport } from './types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table';
 import { Badge } from './components/ui/badge';
+import { Button } from './components/ui/button';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { Trophy, Calendar, FileDown, TrendingUp, Award } from 'lucide-react';
 
